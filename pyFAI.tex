@@ -27,8 +27,8 @@ using reference sample's \textit{powder rings}.  PyFAI shares the geometry
 of \textsc{spd}\cite{spd} but can directly import geometries determined by
 \textsc{fit2d}\cite{fit2d1996}.
 PyFAI has been designed to work with any kind of detector and geometry (transmission or reflection) and
-relies on fabio\cite{fabio}, a library able to read more than 20 image formats
-produced by detectors from 12 different manufacturers.
+relies on FabIO\cite{fabio}, a library able to read more than 20 image
+formats produced by detectors from 12 different manufacturers.
 
 Even if the basic idea is interpolation from cartesian space $(x,y)$ to polar
 space $(2\theta, \chi )$, intensities should be conserved (both local and total)
@@ -99,18 +99,16 @@ which is not acceptable.
 The  $2d$-regrouping of a smooth image should be smooth(Figure \ref{smooth}).
 
 \begin{figure}[h]
-%\begin{center}
 \begin{minipage}{8cm}
 \includegraphics[width=8cm]{img/2Dhistogram.eps}
-\caption{\label{rough}$2d$-regrouped image without pixel splitting. Note the
-missing pixels near the beam stop and the high-frequency noise patterns.}
+\caption{\label{rough}$2d$-regrouped image without pixel splitting. Note
+the missing pixels near the beam stop and the high-frequency noise patterns.}
 \end{minipage}\hspace{5mm}
 \begin{minipage}{8cm}
 \includegraphics[width=8cm]{img/2DwithSplit.eps}
 \caption{\label{smooth}$2d$-regrouped image with pixel splitting. The
 transformation of a smooth image remains smooth.}
 \end{minipage}
-%\end{center}
 \end{figure}
 
 PyFAI solves this problem by considering, in addition to the pixel's position,
@@ -205,14 +203,13 @@ support of LinkSCEEM-2 (RI-261600).
 PyFAI is an open source software released under the GPL licence.
 As of July 2012, pyFAI is available in version 0.6 on the EPN-Campus
 forge\cite{forge} which includes OpenCL acceleration.
-PyFAI depends on Python v2.6 or v2.7, numpy\cite{numpy} and OpenCL\cite{opencl}
+PyFAI depends on Python v2.6 or v2.7, numpy\cite{numpy} and OpenCL\cite{opencl}.
 In order to be able to read images from various detector, pyFAI relies on the
-fabio\cite{fabio} library available from sourceforge. The graphical user
+FabIO\cite{fabio} library available from sourceforge. The graphical user
 interface for calibration of diffraction setup uses in addition
 matplotlib\cite{matplotlib}, scipy\cite{scipy}, and FFTw3\cite{fftw}.
 C, C++ compilers and Cython\cite{cython} are needed to build pyFAI from
 sources.
-
 PyFAI is packaged and available in common Linux distributions like Debian
 7.0 and Ubuntu 12.04. Installer packages for Windows are also
 available on the EPN-Campus forge.
