@@ -3,7 +3,7 @@
 \begin{document}
 \title{PyFAI, a versatile library for azimuthal regrouping}
 
-\author{J\'er\^ome Kieffer, Dimitris Karkoulis}
+\author{J\'er\^ome Kieffer, Dimitrios Karkoulis}
 
 \address{European Synchrotron Radiation Facility; 6 rue Jules Horowitz;
 38043 Grenoble; France}
@@ -64,7 +64,7 @@ also do some  pre-processing like dark-noise subtraction and flat-field correcti
 \subsection{A Python library}
 PyFAI is first and foremost a library: a tool of the scientific
 toolbox built around ipython\cite{ipython} and numpy\cite{numpy} to
-perform data-analysis either interactivly or in scripts.
+perform data-analysis either interactively or via scripts.
 Figure \ref{notebook} shows an interactive session where an integrator is
 created, and image loaded and integrated before being plotted.
 
@@ -77,11 +77,10 @@ interactive environment ipython.}
 \end{figure}
 
 \section{Regrouping mechanism}
-Azimuthal-regrouping is done in pyFAI using a histogram-like algorithm: each
-pixel of the image is associated to it's polar coordinates
-$(2\theta , \chi )$ or $(q, \chi )$. Then a couple of histograms of $2\theta$
-(or $q$) are built:
-one non weighted for measuring the number of pixels falling in each bin and
+In pyFAI, regrouping is performed using a histogram-like algorithm. 
+Each pixel of the image is associated to it's polar coordinates
+$(2\theta , \chi )$ or $(q, \chi )$. Then a pair of histograms of $2\theta$
+(or $q$) are built, one non weighted for measuring the number of pixels falling in each bin and
 another weighted by pixel intensities.
 The division of the weighted histogram by the number of pixels per bin gives
 the powder pattern.
@@ -90,14 +89,14 @@ same way using two-dimensional histograms over radial ($2\theta$ or $q$) and azi
 ($\chi$).
 
 \subsection{Pixel splitting algorithm}
-Powder diffraction patterns obtained by histogram have a major weakness where
+Powder diffraction patterns obtained by histogramming have a major weakness where
 statistic is low.
 %: a high level of  noise is observed close to the beam stop.
-This is particularly striking when considering  $2d$-regrouped where most of
+A manifestation of this weakness becomes apparent in $2d$-regroupping where most of
 the bins close to the beam-stop are not populated by any pixel.
-In Figure \ref{rough} many pixels are missing in the low $2\theta$ region
-what is not acceptable: the  $2d$-regrouping of a smooth image should be smooth
-as shown in Figure \ref{smooth}.
+In Figure \ref{rough} many pixels are missing in the low $2\theta$ region,
+which is not acceptable. 
+The  $2d$-regrouping of a smooth image should be smooth(Figure \ref{smooth}).
 
 \begin{figure}[h]
 %\begin{center}
@@ -116,45 +115,46 @@ transformation of a smooth image remains smooth.}
 
 PyFAI solves this problem by considering, in addition to the pixel's position,
 their spatial extension. Each pixel is then split and distributed over the
-corresponding bins; intensity being consdered as homogeneous in a pixel.
+corresponding bins; intensity being considered as homogeneous in a pixel.
 
 \subsection{Performances and migration to native code}
-For histograms, computation time is proportional to the size of the input image
-and almost independent of the number of bins. Originally the regrouping was implemented
+Originally the regrouping was implemented
 using the histogram provided by numpy\cite{numpy}; then re-implemented in
-cython\cite{cython} to achieve a four times speed-up.
-The pixel splitting algorithm was also implemented in cython, enhancing the
-original histogram and optimized to give excellent single-threaded performances
-around 30 Mpix/s.
+cython\cite{cython} with pixel splitting to achieve a four times speed-up.
+The computation time is governed by the size of the input image; the performances 
+are above 30 Mpix/s on a 3.4GHz Intel corei7.
 
 \subsection{Graphic card implementation}
-Graphical Processing Unit (\textsc{gpu}) are composed of hundreds of
-small computing cores; they are optimized for highly parallel algorithms
-with speed-ups going up to 3 orders of magnitude over sequential code running
-on Central Processing Unit (\textsc{cpu}).
-While histograms do not fall into this category, they can  nevertheless be
-ported to \textsc{gpu} efficiently. In order to benefit from \textsc{gpu} acceleration,
+Graphics Processing Units (\textsc{gpu}s) are composed of hundreds of
+arithmetic logic units; they are optimized for highly
+parallel algorithms with speed-ups reaching up to 3 orders of magnitude over sequential
+code running on Central Processing Units (\textsc{cpu}).
+While histograms do not fall into this category, they can nevertheless be
+ported to \textsc{gpu} efficiently.
+In order to benefit from \textsc{gpu} acceleration,
 the Open Computing Language\cite{opencl} (OpenCL) was used. OpenCL can make use
-of multiple different devices such as \textsc{cpu} and \textsc{gpu} with very
+of multiple different devices such as \textsc{cpu}s and \textsc{gpu}s with very
 different features and capabilities.
-This framework also allows the code to work on multiple \textsc{cpu} cores, which was
-useful for validation. As azimuthal integration is a reduction
-of millions of pixels into hundreds of bins, double-precision arithmetic must
-be used but not all OpenCL devices supports it.
+OpenCL allows the code to work on multiple \textsc{cpu} cores, which was
+useful for validation. 
+As azimuthal integration is a reduction
+of millions of pixels into hundreds of bins, double-precision arithmetics must
+be used, which however is not available on all OpenCL devices.
 Table \ref{perfs} summarizes the execution time for images coming from
 various detectors on a dual-processor computer, either using the
 cython single threaded implementation, either OpenCL on the 16
 \textsc{cpu} cores or the 512 \textsc{gpu} cores of the nVidia Tesla C2075 or
-GTX580 or 1440 \textsc{gpu} cores of the AMD FirePro v7800.
+GTX580 or 1440 \textsc{gpu} cores of the AMD FirePro v7800 (on the later,
+integrations were made in single precision).
 
 \begin{table}[h]
 \begin{center}
-\caption{\label{perfs}Performances obtained on a computer with two Intel
-Xeon X5690 @3.47GHz and various \textsc{gpu}.
+\caption{\label{perfs}Executition time in milliseconds measured on a
+Dell T7500 with two Intel Xeon X5690 @3.47GHz and various \textsc{gpu}.}
 %: C2075 and GTX580 are professional
 %and consumer grade Fermi class nVidia \textsc{gpu} with 512 cores.\\
- The table reports execution time measured in milliseconds for various detectors
- in double precision (except for the AMD FirePro v7800: single precision).}
+% The table reports execution time measured in milliseconds for various
+% detectors in double precision (except for the AMD FirePro v7800: single precision).}
 
 \begin{tabular}{|l|c||c|c||c|c|c|c|}
 \hline
@@ -174,7 +174,7 @@ Fairchild 			& 16 			& 613.9	&	849.7   &	158.9	&	99.0	&	96.4	&	95.6 \\
 The OpenCL implementation of pyFAI is very fast on \textsc{gpu} offering an extra five
 time speed-up over \textsc{cpu} implementation. The profiling of the code revealed new
 bottlenecks which will be addressed in future optimization. OpenCL
-implementations of $2d$ regrouping will also be finalized in further releases.
+implementation of $2d$ regrouping will also be finalized in a future release.
 
 \section{Conclusion}
 The library pyFAI was developed with two main goals:
@@ -185,19 +185,21 @@ management of the geometry and precise pixel splitting offering total and local 
 conservation.
 \end{itemize}
 PyFAI is the first implementation of azimuthal integration on
-graphic card and the twenty folds speed up observed opens the
-door to a new kind of analysis, not even considered until today:
+graphic card and the twenty fold speed up observed opens the
+door to a new kind of analysis, not even considered before:
 a 10-lines script is sufficient for reducing the data of a whole diffraction
 tomography experiment, such analysis takes a few minutes using pyFAI on
 a 60 x 200 frames dataset when it used to take days.
 PyFAI is the tool to couple with the next generation high-speed detectors.
 
 \subsection*{Acknowledgments}
-Authors wish to acknowledge especially Manuel S\'anchez del R\'io for suggesting
-the usage of weighted histograms;Peter B\"osecke for the geometry setup;
+The authors would like to extend their most sincere appreciation to their
+colleagues and especially Manuel S\'anchez del R\'io for suggesting
+the usage of weighted histograms; Peter B\"osecke for the geometry setup;
 V. Armando Sol\'e for his expertise on developing native code under windows and
 Jonathan Wright for precise specifications and validations. Porting
-pyFAI to \textsc{gpu} would not have been possible without the financial support of LinkSCEEM-2 (RI-261600).
+pyFAI to \textsc{gpu} would have not been possible without the financial
+support of LinkSCEEM-2 (RI-261600).
 
 \subsection*{Appendices}
 PyFAI is an open source software released under the GPL licence.
@@ -212,10 +214,10 @@ C, C++ compilers and Cython\cite{cython} are needed to build pyFAI from
 sources.
 
 PyFAI is packaged and available in common Linux distributions like Debian
-7.0 and Ubuntu 12.04. Install packages for Windows are also
+7.0 and Ubuntu 12.04. Installer packages for Windows are also
 available on the EPN-Campus forge.
 
- \section*{References}
+\section*{References}
 \bibliographystyle{iopart-num}
 \bibliography{biblio}
 
