@@ -16,12 +16,12 @@ in 15 last years for diffraction experiments (both in \textsc{waxs},
 \textsc{saxs}, single crystal and powder diffraction).
 These detectors have a large sensitive area, have high spatial
 resolution and provide millions of pixels. PyFAI was designed to reduce \textsc{saxs} and
-\textsc{waxs} images taken with those detectors into $1D$ curve (azimuthal integration)
-or $2D$ images (a radial transformation named caking), usable by other software
+\textsc{waxs} images taken with those detectors into $1D$ curves (azimuthal
+integration) or $2D$ images (a radial transformation named caking), usable by other software
 for analysis such as Rietveld refinement.
 
-As a library, the aim of pyFAI is to be integrated in other tools like
-PyMca\cite{pymca} or \textsc{edna}\cite{edna} with a clear pythonic interface. But pyFAI
+As a library, the aim of pyFAI is to be integrated into other tools like
+PyMca\cite{pymca} or \textsc{edna}\cite{edna} with a clean pythonic interface. But pyFAI
 offers also command line tools for batch processing, exporting data in q-space (for \textsc{saxs}) or 2$\theta$ for
 (\textsc{waxs}) and a calibration GUI for optimizing the geometry of the setup
 using a reference sample's \textit{powder rings}.  PyFAI shares the geometry
@@ -32,8 +32,8 @@ relies on FabIO\cite{fabio}, a library able to read more than 20 image
 formats produced by detectors from 12 different manufacturers.
 
 During the transformation from cartesian space $(x,y)$ to polar
-space $(2\theta, \chi )$, intensities are conserved (both local and total)
-in order to obtain quantitative results.  Technical details on how this
+space $(2\theta, \chi )$, both local and total intensities are conserved
+in order to obtain quantitative results. Technical details on how this
 integration is implemented and how it was ported to native C-code and parallelized on graphic card are
 discussed in this paper.
 \end{abstract}
@@ -48,11 +48,12 @@ frameworks like \textsc{edna}\cite{edna}, such stand-alone programs, due to thei
 monolithic nature, could not keep pace with the data flow of new detectors.
 Therefore we decided to create a new implementation of azimuthal integration
 which is easier to optimise for specific computer hardware and is designed to
-allow modern parallel hardware features to be used more easily.
+usa modern parallel hardware features if they are available.
 
 \section{Python Fast Azimuthal Integration}
-PyFAI is implemented in Python, which is already very popular for data
-analysis (PyMca\cite{pymca}, PyNX\cite{pynx}, \ldots) and open source.
+PyFAI is implemented in Python, which is already very popular for synchrotron
+radiation data analysis (PyMca\cite{pymca}, PyNX\cite{pynx}, \ldots) and open
+source.
 
 \subsection{PyFAI executables}
 PyFAI was designed to be used by scientists needing a simple tool for azimuthal
@@ -65,7 +66,7 @@ also do some  pre-processing like dark-noise subtraction and flat-field correcti
 
 \subsection{A Python library}
 PyFAI is first and foremost a library: a tool of the scientific
-toolbox built around ipython\cite{ipython} and numpy\cite{numpy} to
+toolbox built around IPython\cite{ipython} and NumPy\cite{numpy} to
 perform data-analysis either interactively or via scripts.
 Figure \ref{notebook} shows an interactive session where an integrator is
 created, and image loaded and integrated before being plotted.
@@ -73,8 +74,8 @@ created, and image loaded and integrated before being plotted.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=15cm]{img/notebook-l.eps}
-\caption{\label{notebook} Example of interactive use of fabio and pyFAI in the
-interactive environment ipython.}
+\caption{\label{notebook} Example of interactive use of FabIO and pyFAI in the
+interactive environment IPython.}
 \end{center}
 \end{figure}
 
@@ -94,7 +95,7 @@ same way using two-dimensional histograms over radial ($2\theta$ or $q$) and azi
 Powder diffraction patterns obtained by histogramming have a major weakness where
 pixel statistics are low.
 %: a high level of  noise is observed close to the beam stop.
-A manifestation of this weakness becomes apparent in $2D$-regroupping where most of
+A manifestation of this weakness becomes apparent in $2D$-regrouping where most of
 the bins close to the beam-stop are not populated by any pixel.
 In Figure \ref{rough} many pixels are missing in the low $2\theta$ region,
 which is not acceptable.
@@ -119,8 +120,8 @@ corresponding bins; intensity being considered as homogeneous within a pixel.
 
 \subsection{Performances and migration to native code}
 Originally the regrouping was implemented
-using the histogram provided by numpy\cite{numpy}; then re-implemented in
-cython\cite{cython} with pixel splitting to achieve a four times speed-up.
+using the histogram provided by NumPy\cite{numpy}; then re-implemented in
+Cython\cite{cython} with pixel splitting to achieve a four times speed-up.
 The computation time is governed by the size of the input image; the performances
 are above 30 Mpix/s on a 3.4 GHz Intel corei7-2600.
 
@@ -142,20 +143,20 @@ of millions of pixels into hundreds of bins, double-precision arithmetic is pref
 which however is not available on all OpenCL devices.
 Table \ref{perfs} summarizes the execution time for images coming from
 various detectors on a dual-processor computer, either using the
-cython single threaded implementation, either OpenCL on the 16
+Cython single threaded implementation, either OpenCL on the 16
 \textsc{cpu} cores or the 512 \textsc{gpu} cores of the nVidia Tesla C2075 or
 GTX580 or 1440 \textsc{gpu} cores of the AMD FirePro v7800 (on the later,
 integrations were made in single precision).
 
 \begin{table}[h]
-\begin{center}
 \caption{\label{perfs}Execution time in milliseconds measured on a
 Dell T7500 with two Intel Xeon X5690 @3.47GHz and various \textsc{gpu}.}
 %: C2075 and GTX580 are professional
 %and consumer grade Fermi class nVidia \textsc{gpu} with 512 cores.\\
 % The table reports execution time measured in milliseconds for various
 % detectors in double precision (except for the AMD FirePro v7800: single precision).}
-
+\vspace{1mm}
+\begin{center}
 \begin{tabular}{|l|c||c|c||c|c|c|c|}
 \hline
 Detector type   & Image size 	& \multicolumn{2}{|c||}{\textsc{cpu} X5690}& \multicolumn{4}{|c|}{OpenCL $1D$ regrouping} \\
@@ -184,9 +185,9 @@ The library pyFAI was developed with two main goals:
 management of the geometry and precise pixel splitting offers total and local intensity
 conservation.
 \end{itemize}
-PyFAI is the first implementation that we are aware of for azimuthal integration on
-a graphics card and the twenty fold speed up observed opens the
-door to a new kind of analysis, not even considered before:
+PyFAI is the first implementation of azimuthal integration on
+a graphics card that we are aware of, and the twenty fold speed up observed
+opens the door to a new kind of analysis, not even considered before:
 a 10-line python script is sufficient for reducing the data of a whole diffraction
 tomography experiment, such analysis takes a few minutes using pyFAI on
 a 60 x 200 frames dataset when it used to take days.
@@ -203,13 +204,13 @@ support of LinkSCEEM-2 (RI-261600).
 
 \subsection*{Appendices}
 PyFAI is an open source software released under the GPL licence.
-As of July 2012, pyFAI is available in version 0.6 on the EPN-Campus
-forge\cite{forge} which includes OpenCL acceleration.
-PyFAI depends on Python v2.6 or v2.7, numpy\cite{numpy} and OpenCL\cite{opencl}.
-In order to be able to read images from various detector, pyFAI relies on the
-FabIO\cite{fabio} library available from sourceforge. The graphical user
-interface for calibration of diffraction setup uses in addition
-matplotlib\cite{matplotlib}, scipy\cite{scipy}, and FFTw3\cite{fftw}.
+As of July 2012, pyFAI version 0.6, which includes OpenCL
+acceleration, is available on the EPN-Campus forge\cite{forge}.
+PyFAI depends on Python v2.6 or v2.7, NumPy\cite{numpy} and OpenCL\cite{opencl}.
+In order to be able to read images from various detectors, pyFAI relies on the
+FabIO\cite{fabio} library available from SourceForge.  
+In addition, the graphical user interface for calibration of diffraction setup
+uses matplotlib\cite{matplotlib}, SciPy\cite{scipy}, and FFTw3\cite{fftw}.
 C, C++ compilers and Cython\cite{cython} are needed to build pyFAI from
 sources.
 PyFAI is packaged and available in common Linux distributions like Debian
