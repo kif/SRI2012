@@ -1,23 +1,129 @@
+Title: Fast azimuthal Integration
 
-Introductions
+Authors: 	Jérôme Kieffer
+			Dimitrios Karkoulis
+			Jonathan P. Wright
 
-ISDD Commun building blocks
+PyFAI [1,2] is an open-source python library for Fast Azimuthal Integration
+which provides 1D- and 2D-azimuthal regrouping with a clean programming interface and
+tools for calibration.
 
-Python programming language for scientific computing and especially data
-analysis.
+The Python programming language was chosen for many  scientific application and
+especially in data analysis where new algorithms can be tested thanks to the
+numpy toolbox and the ipython interface  which represents an
+alternative to Matlab (Figure 1). 
+Python allows, in addition, programs to scale to large applications,
+like PyMca or MxCube.
+Missing building blocks for X-ray science have been developped inhouse like
+FabIO [3] for image access, pyHST for tomographic reconstructions and
+pyFAI for azimuthal regrouping which is presented here.
 
-Allow to be integrated into larger programs (PyMca)
+Fast integrations are obtained by the combination of an algorithm ensuring that
+each pixel from the detector provides a direct contribution to the final
+diffraction pattern and a parallel algorithm suitable for modern hardware.
 
-ipython + numpy toolbox for scientific for designing algorithms
+Azimuthal integration
 
-Missing building blocks developpes by ISDD like pyHST for tomographic
-reconstructions and pyFAI for azimuthal regrouping\ldots.
+Azimuthal integration is a transformation from cartesian space to polar space
+where the radial dimention is either a distance (radius), a momentum transfer
+(q) or a scattering angle (2θ).
+During this transformation, both local densities and total intensities are
+conserved in order to obtain accurate quantitative results. 
 
-Tools mainly used for azimuthal integration like fit2d or spd are not
-compatible with this library approach. 
+Regrouping is performed using a histogram-like algorithm: 
+Each pixel of the image is associated to its polar coordinates (r, χ) then a
+pair of histograms versus r are built, one non weighted for measuring the
+number of pixels falling in each bin and another weighted by pixel intensities;
+after dark-current subtraction, and corrections for flat-field, solidangle and polarization.
+The diffraction pattern is obtained by dividing the weighted histogram
+by the number of pixels per bin. 
+2D regrouping is obtained in the same way using two-dimensional histograms over
+radial and azimuthal dimentions.
+To avoid high frequency noise where pixel statistics are low; pixels are
+splitted over multiple bins according to their spatial extension. 
 
-Retained the geometry of spd and a pixels splitting algorith close to the one of
-fit2d.
+While histograms are efficient on a single processor, they cannot efficiently be
+run in parallel due to write access conflicts. This issue was addressed by
+calculating and storing the full table of correspondance (or look-up
+table) between any image pixels and the histogram bins. Different output bins
+can then be processed in parallel making azimuthal integraton efficient on
+multi-core systems and on graphics cards.
 
-\ldots
+Performances
+
+The performance of the code is monitored on a variety of computing hardware and
+for different image sizes. 
+Figure 2 shows the number of frames processed per second versus image size; 
+larger numbers are better.
+The maximum data throughput is of the order 200 Mpixel/second (800MB/s of float
+data, outperforming the speed of most current hard disks),
+and therefore depends on the computer having a sustained supply of data to be able to continue working at this speed.
+For a typical image of 2048x2048 pixels, after loading and setting up, pyFAI
+takes about 20 milliseconds per new frame to compute the 1D integrated profile
+but sustained rate on integrating large datasets (thousands of images) is only
+of 100 milliseconds per image due to reading bottleneck.  
  
+Deployment
+
+PyFAI has been used online on a couple of SAXS beamlines at ESRF (Duble - BM26
+and BioSaxs - BM29) integrated into python servers where it can process images
+at 1 Hz; limited by the network and disk latencies.
+To overcome this limitation, pyFAI is being integrated into the image
+acquisition server LImA, providing integrated images directly as output of the
+camera. In this configuration, performances were measured at 30 Hz.
+Many beamlines showed great interest for those developments among them ID02,
+ID11, ID13 and ID22. 
+
+Status
+
+The PyFAI code is fully open source under the GPL license and available from http://github.com/kif/pyFAI. 
+PyFAI is packaged and available in common Linux distributions like Debian 7.0 and Ubuntu 12.04. 
+Installer packages for Windows and MacOSX are available on https://forge.epn-campus.eu/projects/azimuthal/files. 
+The software depends on : python 2.6+, NumPy, SciPy, matplotlib and FabIO. 
+Thanks to image input code from the FabIO library, the code is already compatible with at least 20 detectors from 12 different manufacturers. 
+
+Conclusions 
+
+PyFAI is a novel library for azimuthal integration which provides
+geometric equivalence with other programs and offers a clean programming
+interface.
+
+PyFAI is the first implementation of an azimuthal integration algorithm on a
+graphic card as far as we are aware of, and exhibits a twenty-fold
+speed up compated to existing implementations.
+
+Acknowledgments
+
+The authors would like to express their most sincere appreciation to their
+colleagues and especially M. Sánchez del Río for suggesting
+the usage of weighted histograms; P. Bösecke for the provision of the
+experiment geometry setup; M. Burghammer for precise specifications; V. A.
+Solé for his expertise on developing native code under Windows, F.-E. Picca
+for the documentation and S. Petitdemange for helping with the integration into
+LImA.
+Porting pyFAI to \textsc{gpu} would have not been possible without the financial
+support of LinkSCEEM-2 (RI-261600).
+
+References:
+[1] Jérôme Kieffer,
+			Dimitrios Karkoulis,
+			Journal: Journal of Physics: Conference Series (2013)
+			vol: SRI2012
+			Accepted
+[2] 	Jérôme Kieffer,
+				Jonathan P. Wright,
+				Journal: Powder Diffraction 
+				Submitted (Expected July 2013)				
+[3] Erik B. Knudsen,
+		Henning O. S{\o}rensen,
+    	Jonathan P. Wright,
+    	Gaël Goret,
+    	Jérôme Kieffer;
+    	Journal: Journal of Applied Crystallography (2013),
+    	Accepted
+
+Figure 1: Example of interactive use of FabIO and pyFAI in the notebook edition
+of IPython.
+
+Figure 2: Performances (frames processed per second) measured on a beamline
+(ID13) workstation versus image size (in mega-pixel):
