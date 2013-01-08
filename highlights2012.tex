@@ -4,46 +4,42 @@ Authors: 	Jérôme Kieffer (ISDD/Soft/DAU)
 		Dimitrios Karkoulis (ISDD/Soft/DAU)
 		Jonathan P. Wright (Exp/MS/ID11)
 
-The software package pyFAI [1,2] has been designed to reduce SAXS, WAXS and XRPD images taken with area detectors into 1D curves (azimuthal integration), or 2D images (a polar transformation named “caking” or “azimuthal regrouping”).
-As a library, the aim of pyFAI is to be integrated into other tools like PyMca
-and EDNA but its also provides a clean pythonic interface enabling interactive use from the console, as in Figure 1. In addition, pyFAI features tools for batch processing and calibration for optimizing the geometry of the experiment using the Debye-Scherrer rings of a reference sample.
-The geometry used in pyFAI is compatible with any flat area detector in any orientation, even with large tilts, moreover geometry configuration can be imported from other tools like FIT2D or SPD. 
-Fast integrations are obtained by the combination of an algorithm ensuring that
-each pixel from the detector provides a direct contribution to the final
-diffraction pattern and a parallel algorithm suitable for modern hardware.
-The Python programming language was chosen for many scientific applications and especially in data analysis where new algorithms can be tested thanks to the NumPy toolbox and the iPython interface which represents an alternative to Matlab. 
-Missing building blocks for X-ray science have been developed at ESRF like
-FabIO [3] for image access, pyHST for tomographic reconstructions and
-pyFAI for azimuthal regrouping which is presented here.
-Python allows, in addition, programs to scale to large applications,
-like PyMca or MxCube.
+The software package pyFAI [1,2] has been designed to reduce SAXS, WAXS and XRPD images recorded by area detectors into 1D curves (azimuthal integration), or 2D patterns (a polar transformation named “caking” or “azimuthal regrouping”).
+As a library, pyFAI is designed to be integrated into other tools like PyMca and EDNA but it also provides a clean Python interface enabling interactive use from the console, as shown in Figure 1. 
+In addition, pyFAI features tools for batch processing and calibration facilities for optimising the geometry of the experiment by using the Debye-Scherrer rings of a reference sample.
+The geometry used in pyFAI is compatible with any flat area detector at any orientation, even with large tilts.
+Moreover geometry configurations can be imported from other tools like FIT2D or SPD. 
+Fast integrations are obtained by combining an algorithm ensuring that each pixel from the detector provides a direct contribution to the final diffraction pattern, and a parallel algorithm suitable for modern hardware.
+The Python programming language, which is already used in many scientific applications, was chozen for data analysis because new algorithms can be easily tested thanks to the NumPy toolbox and the iPython interface (a free alternative to Matlab).
+Missing building blocks for X-ray science have been developed at the ESRF such as FabIO [3] for image data access, pyHST for tomographic reconstructions and pyFAI (presented here) for azimuthal regrouping.
+Python allows in addition programs to scale from small scripts to large applications, with Graphical intefaces like PyMca or MxCube.
 
-Azimuthal integration is a transformation from cartesian space to polar space where the radial dimension can be either the distance (radius), the momentum transfer (q) or the scattering angle (2θ).
-During this geometrical transformation, both local densities and total intensities must be conserved in order to obtain accurate and quantitative results (unlike interpolation). 
-Integration is performed using a histogram-like algorithm: 
-Each pixel of the image is associated to its polar coordinates then a
-pair of histograms versus the radial dimension are built, one non weighted for measuring the number of pixels falling in each bin and another weighted by pixel intensities; intensities taken after dark-current subtraction, and corrections for flat-field, solid-angle and polarization effects.
+Azimuthal integration is a transformation from Cartesian to polar space where the radial dimension can be either the distance (radius), the momentum transfer (q) or the scattering angle (2θ).
+Throughout this geometrical transformation total intensities must be conserved in order to obtain quantitatively accurate results (unlike interpolation). 
+Integration is performed via a histogram-like algorithm: 
+Each pixel of the image is associated to its polar coordinates, then a pair of histograms versus the radial dimension are built, one unweighted for measuring the number of pixels falling into each bin and another weighted by the pixel intensities.
+Intensities are taken after dark-current subtraction, corrections for flat-field as well as for solid-angle and polarization effects.
 The diffraction pattern is obtained by dividing the weighted histogram by the number of pixels per bin. 
 2D regrouping is obtained in the same way using two-dimensional histograms over
 radial and azimuthal dimensions.
-To avoid high frequency noise where pixel statistics are low; pixels are
-split over multiple bins according to their spatial extension. 
-While histograms are efficient on a single processor, they face write access conflicts when run in parallel [2] and require costly locking. 
-This issue was addressed by pre-calculating (and storing) the full table of correspondence (or look-up table) between any image pixels and the histogram bins. 
-Thanks to this look-up table, different output bins can then be processed in parallel making azimuthal integration efficient on multi-core systems and on graphics cards.
+In order to avoid high frequency noise where pixel statistics are low, pixels are split over multiple bins according to their spatial extent. 
+While the histogram build-up technique is efficient on a single processor, it faces write-access conflicts when run in parallel [2] and requires costly locking. 
+This issue was addressed by pre-calculating (and storing) the full correspondence table (or look-up table) between all the image pixels and the histogram bins. 
+Thanks to the look-up table, different output bins can then be processed in parallel making azimuthal integration computationally effective on multi-core systems and on graphics cards.
 
-Figure 2 shows the number of frames processed per second versus image size on a beamline workstation. Parallel implementations are much faster than their serial equivalent but have a drawback: the larger memory footprint due to the look-up table. Here, the graphic card is as fast as the processor but it is much cheaper.
-The maximum data throughput is of the order 200 Mpixels/second (800 MBytes/second of float data, much more than the speed of current hard disks), and therefore depends on the computer having a sustained supply of data to be able to continue working at this speed.
-For a typical image of 2048x2048 pixels, after loading and setting up, pyFAI takes about 20 milliseconds per new frame to compute the 1D integrated profile but sustained rate on integrating large datasets (thousands of images) is only of 100 milliseconds per image due to reading bottleneck.
-PyFAI has been used online on a couple of SAXS beamlines at ESRF (Dubble - BM26
-and BioSaxs – BM29) since spring 2012. PyFAI was integrated into Python servers (like EDNA) where it processes images at speed of up to 1 fps; limited by the network and disk latencies.
-To overcome this limitation, pyFAI is being integrated into the image acquisition server LImA, providing integrated images directly as output of the detector; reaching 30 fps in test condition.
-Several ESRF beamlines showed great interest for those developments among them ID02, ID11, ID13 and ID22; but other institutes are also interested: CEA Grenoble, CEA Saclay and Synchrotron Soleil.
+Figure 2 shows the number of frames processed per second versus image size on a typical beamline workstation. 
+Parallel implementations are much faster than their serial equivalents but have a drawback: the larger memory footprint due to the look-up table. 
+Here, the graphic card is as fast as the processor but it is much cheaper.
+The maximum attainable data throughput is of the order 200 Mpixels/second (800 MBytes/second of float data, much more than the speed of current hard disks), and therefore depends on a computer having a sustained supply of data to be able to continue working at this speed.
+For a typical image of 2048x2048 pixels and after loading and setting up, pyFAI takes about 20 milliseconds per new frame to compute the 1D integrated profile but the sustained rate for integrating large datasets (thousands of images) is only of 100 milliseconds per image due to reading bottlenecks.
+PyFAI has been used online on two SAXS beamlines at the ESRF (Dubble – BM26 and BioSaxs – BM29) since spring 2012, and is integrated into Python servers (like EDNA) where it processes images at speeds of up to 1 fps, being mainly limited by the network and disk latencies.
+To overcome this limitation, pyFAI is currently being integrated into the image acquisition server LImA, providing integrated images directly as output frames from the detector, reaching 30 fps in test condition.
+Several ESRF beamlines have shown great interest for this development among them ID02, ID11, ID13 and ID22, but other institutes are also interested: CEA Grenoble, CEA Saclay and Synchrotron Soleil.
 
-Development Status: The source code is fully open source under the GPL license and available from http://github.com/kif/pyFAI. 
+Development Status: The source code is fully open source under the GPL license conditions and is available at http://github.com/kif/pyFAI. 
 PyFAI is packaged and available in common Linux distributions like Debian 7.0 and Ubuntu 12.04. 
-Installer packages for Windows and MacOSX are available from https://forge.epn-campus.eu/projects/azimuthal/files. 
-Thanks to the FabIO library[3] for reading diffraction images, pyFAI is compatible with at least 20 detectors from 12 different manufacturers. 
+Installer packages for Windows and MacOSX can be downloaded from https://forge.epn-campus.eu/projects/azimuthal/files. 
+Thanks to the FabIO library[3], pyFAI is compatible with at least 20 detectors formats from 12 different manufacturers. 
 
 References:
 [1] Jérôme Kieffer & Dimitrios Karkoulis,
